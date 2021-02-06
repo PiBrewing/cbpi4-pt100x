@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
     Property.Number(label="RefRest", configurable = True, default_value = 4300, description = "Reference Resistor of the MAX31865 board (it's written on the resistor: 430 or 4300,....)"),
     Property.Number(label="ignore_below",configurable = True, default_value = 0, description="Readings below this value will be ignored"),
     Property.Number(label="ignore_above",configurable = True,default_value = 100, description="Readings above this value will be ignored"),
-    Property.Select(label="ConfigText", options=["[0xB2] - 3 Wires Manual","[0xD2] - 3 Wires Auto","[0xA2] - 2 or 4 Wires Manual","[0xC2] - 2 or 4 Wires Auto"], description="Choose beetween 2, 3 or 4 wire PT100 & the Conversion mode at 60 Hz beetween Manual or Continuous Auto")])
+    Property.Select(label="ConfigText", options=["[0xB2] - 3 Wires Manual","[0xD2] - 3 Wires Auto","[0xA2] - 2 or 4 Wires Manual","[0xC2] - 2 or 4 Wires Auto"], description="Choose beetween 2, 3 or 4 wire PT100 & the Conversion mode at 60 Hz beetween Manual or Continuous Auto"),
+    Property.Select(label="Interval", options=[1,5,10,30,60], description="Interval in Seconds")])
 
 		#
 		# Config Register
@@ -47,11 +48,13 @@ class CustomSensor(CBPiSensor):
         self.clkPin  = 11
 
         self.csPin = int(self.props.get("csPin"))
-        self.ResSens = int(self.props.get("ResSens"))
-        self.RefRest = int(self.props.get("RefRest"))
-        self.low_filter = float(self.props.get("ignore_below"))
-        self.high_filter = float(self.props.get("ignore_above"))
+        self.ResSens = int(self.props.get("ResSens",1000))
+        self.RefRest = int(self.props.get("RefRest",4300))
+        self.low_filter = float(self.props.get("ignore_below",0))
+        self.high_filter = float(self.props.get("ignore_above",100))
         self.ConfigReg = self.props.get("ConfigText")[1:5]
+        self.Interval = int(self.props.get("Interval",5))
+ 
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
 
         self.TEMP_UNIT = cbpi.config.get("TEMP_UNIT", "C")
@@ -66,9 +69,9 @@ class CustomSensor(CBPiSensor):
 
             self.value = self.max.readTemp()
 
-            if self.TEMP_UNIT == "C":
+            if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
                 self.value=round(self.value,2)
-            else:
+            else: # Report temp in F if unit selected in settings
                 self.value=round((9.0 / 5.0 * self.value + 32), 2)
 
             if self.value < self.low_filter or self.value > self.high_filter:
@@ -76,7 +79,7 @@ class CustomSensor(CBPiSensor):
             else:
                 self.push_update(self.value)
                 self.value_old = self.value
-            await asyncio.sleep(1)
+            await asyncio.sleep(self.Interval)
     
     def get_state(self):
         return dict(value=self.value)

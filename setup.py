@@ -3,9 +3,9 @@ from setuptools import setup
 setup(name='cbpi4-pt100x',
       version='0.0.1',
       description='CraftBeerPi Plugin',
-      author='',
+      author='Alexander Vollkopf',
       author_email='',
-      url='',
+      url='https://github.com/avollkopf/cbpi4-pt100x',
       include_package_data=True,
       package_data={
         # If any package contains *.txt or *.rst files, include them:
