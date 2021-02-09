@@ -45,16 +45,17 @@ class max31865(object):
 		self.setupGPIO()
 		
 	def setupGPIO(self):
-		GPIO.setwarnings(False)
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(self.csPin, GPIO.OUT)
-		GPIO.setup(self.misoPin, GPIO.IN)
-		GPIO.setup(self.mosiPin, GPIO.OUT)
-		GPIO.setup(self.clkPin, GPIO.OUT)
-
-		GPIO.output(self.csPin, GPIO.HIGH)
-		GPIO.output(self.clkPin, GPIO.LOW)
-		GPIO.output(self.mosiPin, GPIO.LOW)
+                mode = GPIO.getmode()
+                if (mode == None):
+                    GPIO.setmode(GPIO.BCM)
+                GPIO.setup(self.csPin, GPIO.OUT)
+                GPIO.setup(self.misoPin, GPIO.IN)
+                GPIO.setup(self.mosiPin, GPIO.OUT)
+                GPIO.setup(self.clkPin, GPIO.OUT)
+                
+                GPIO.output(self.csPin, GPIO.HIGH)
+                GPIO.output(self.clkPin, GPIO.LOW)
+                GPIO.output(self.mosiPin, GPIO.LOW)
 
 	def readTemp(self):
 		#

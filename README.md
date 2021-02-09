@@ -26,9 +26,12 @@ clkPin = 11
 
 The code for the request to the max chip is from https://github.com/steve71/MAX31865 so all credit really goes there... i slightly modified the code from the craftbeerpi v3 plugin(https://github.com/thegreathoe/cbpi-pt100-sensor) to allow also the usage of tha PT1000 and added some other parameters.
 
+**Changelog 
+
+09.02.21:: Added offset parameter and changed the GPIO.setmode. Currnetly, warnings are displayed during startup of CBPi. However, they cause typically no issues
 
 
-05.02.21: Adpated code to run under cbpi4
+05.02.21:: Adpated code to run under cbpi4
 
 Old versions:
 CBPi3
