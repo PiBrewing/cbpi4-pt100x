@@ -64,7 +64,7 @@ class CustomSensor(CBPiSensor):
 
         while self.running is True:
             # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
-			self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
+            self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
             self.value = self.max.readTemp()
             if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
                 self.value=round((self.value + self.offset),2)
