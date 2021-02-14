@@ -59,13 +59,12 @@ class CustomSensor(CBPiSensor):
         self.Interval = int(self.props.get("Interval",5))
  
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
-        # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
-        self.TEMP_UNIT = cbpi.config.get("TEMP_UNIT", "C")
-
+               
     async def run(self):
 
         while self.running is True:
-
+            # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
+			self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
             self.value = self.max.readTemp()
             if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
                 self.value=round((self.value + self.offset),2)
