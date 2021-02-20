@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='cbpi4-pt100x',
-      version='0.0.3',
+      version='0.0.4',
       description='CraftBeerPi Plugin',
       author='Alexander Vollkopf',
       author_email='avollkopf@web.de',

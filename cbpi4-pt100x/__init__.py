@@ -9,6 +9,7 @@ import random
 import RPi.GPIO as GPIO
 from cbpi.api import *
 from . import max31865
+from subprocess import call
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class CustomSensor(CBPiSensor):
                
     async def run(self):
 
-        while self.running is True:
+        while True:
             # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
             self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
             self.value = self.max.readTemp()
@@ -74,6 +75,7 @@ class CustomSensor(CBPiSensor):
             if self.value < self.low_filter or self.value > self.high_filter:
                 self.push_update(self.value_old)
             else:
+                self.log_data(self.value)
                 self.push_update(self.value)
                 self.value_old = self.value
             await asyncio.sleep(self.Interval)
