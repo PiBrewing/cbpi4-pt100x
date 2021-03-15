@@ -63,7 +63,7 @@ class CustomSensor(CBPiSensor):
                
     async def run(self):
 
-        while True:
+        while self.running == True:
             # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
             self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
             self.value = self.max.readTemp()
