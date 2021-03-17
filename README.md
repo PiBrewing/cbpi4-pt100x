@@ -1,4 +1,4 @@
-# Craftbeerpi4 Plugin for PT100/PT10000 Sensor
+# Craftbeerpi4 Plugin for PT100/PT1000 Sensor
 
 PT100 / PT1000 probes using a max31865 chip.  for wiring go to https://github.com/thegreathoe/cbpi-pt100-sensor/ updated 8/2/17
 
