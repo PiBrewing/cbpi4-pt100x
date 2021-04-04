@@ -28,6 +28,8 @@ Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt
 The code for the request to the max chip is from https://github.com/steve71/MAX31865 so all credit really goes there... i slightly modified the code from the craftbeerpi v3 plugin(https://github.com/thegreathoe/cbpi-pt100-sensor) to allow also the usage of tha PT1000 and added some other parameters.
 
 - Changelog:
+	
+	- 04.04.21 (0.0.7): Some small fixes in case values out of valid range are reported from sensor
 
 	- 15.03.21 (0.0.6): Change to supprt cbpi >= 4.0.0.31
  
