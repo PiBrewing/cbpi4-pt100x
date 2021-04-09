@@ -53,12 +53,16 @@ class CustomSensor(CBPiSensor):
         self.csPin = int(self.props.get("csPin"))
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
-        self.offset = float(self.props.get("offset",0))
+        self.offset = self.props.get("offset")
+        if self.offset == "" or self.offset is None:
+            self.offset = 0
+        else:
+            self.offset = float(self.offset)
         self.low_filter = float(self.props.get("ignore_below",0))
         self.high_filter = float(self.props.get("ignore_above",100))
         self.ConfigReg = self.props.get("ConfigText")[1:5]
         self.Interval = int(self.props.get("Interval",5))
-
+ 
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
                
     async def run(self):
@@ -73,12 +77,11 @@ class CustomSensor(CBPiSensor):
                 self.value=round((9.0 / 5.0 * self.value + 32 + self.offset), 2)
 
             if self.value < self.low_filter or self.value > self.high_filter:
-                self.value = self.value_old
+                self.push_update(self.value_old)
             else:
+                self.log_data(self.value)
+                self.push_update(self.value)
                 self.value_old = self.value
-
-            self.push_update(self.value)
-            self.log_data(self.value)           
             await asyncio.sleep(self.Interval)
     
     def get_state(self):
