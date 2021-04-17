@@ -19,7 +19,7 @@ setup(name='cbpi4-pt100x',
       'cbpi4-pt100x': ['*','*.txt', '*.rst', '*.yaml']},
       packages=['cbpi4-pt100x'],
       install_requires=[
-            'cbpi>=4.0.0.31',
+            'cbpi>=4.0.0.33',
       ],
       long_description=long_description,
       long_description_content_type='text/markdown'

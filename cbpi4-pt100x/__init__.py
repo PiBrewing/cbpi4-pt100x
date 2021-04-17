@@ -50,14 +50,10 @@ class CustomSensor(CBPiSensor):
         self.mosiPin = 10
         self.clkPin  = 11
 
-        self.csPin = int(self.props.get("csPin"))
+        self.csPin = int(self.props.get("csPin",17))
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
-        self.offset = self.props.get("offset")
-        if self.offset == "" or self.offset is None:
-            self.offset = 0
-        else:
-            self.offset = float(self.offset)
+        self.offset = float(self.props.get("offset",0))
         self.low_filter = float(self.props.get("ignore_below",0))
         self.high_filter = float(self.props.get("ignore_above",100))
         self.ConfigReg = self.props.get("ConfigText")[1:5]
