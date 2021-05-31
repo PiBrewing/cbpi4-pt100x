@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
     Property.Number(label="offset",configurable = True, default_value = 0, description="Offset for the PT Sensor (Default is 0)"),
     Property.Number(label="ignore_below",configurable = True, default_value = 0, description="Readings below this value will be ignored"),
     Property.Number(label="ignore_above",configurable = True,default_value = 100, description="Readings above this value will be ignored"),
+    Property.Number(label="ignore_delta",configurable = True,default_value = 1, description="Ignore reading if delta between two readings is above this value."),
     Property.Select(label="ConfigText", options=["[0xB2] - 3 Wires Manual","[0xD2] - 3 Wires Auto","[0xA2] - 2 or 4 Wires Manual","[0xC2] - 2 or 4 Wires Auto"], description="Choose beetween 2, 3 or 4 wire PT100 & the Conversion mode at 60 Hz beetween Manual or Continuous Auto"),
     Property.Select(label="Interval", options=[1,5,10,30,60], description="Interval in Seconds")])
 
@@ -45,12 +46,13 @@ class CustomSensor(CBPiSensor):
     def __init__(self, cbpi, id, props):
         super(CustomSensor, self).__init__(cbpi, id, props)
         self.value = 0
+        self.temp = 0
         self.value_old = 0
         self.misoPin = 9
         self.mosiPin = 10
         self.clkPin  = 11
 
-        self.csPin = int(self.props.get("csPin"))
+        self.csPin = int(self.props.get("csPin",17))
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
         self.offset = float(self.props.get("offset",0))
@@ -58,7 +60,10 @@ class CustomSensor(CBPiSensor):
         self.high_filter = float(self.props.get("ignore_above",100))
         self.ConfigReg = self.props.get("ConfigText")[1:5]
         self.Interval = int(self.props.get("Interval",5))
- 
+        self.delta_filter = float(self.props.get("ignore_delta",1))
+        self.value_old = 9999
+        counter = 0
+
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
                
     async def run(self):
@@ -66,18 +71,36 @@ class CustomSensor(CBPiSensor):
         while self.running == True:
             # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
             self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
-            self.value = self.max.readTemp()
+            self.temp = self.max.readTemp()
             if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
-                self.value=round((self.value + self.offset),2)
+                self.temp = round((self.temp + self.offset),2)
             else: # Report temp in F if unit selected in settings
-                self.value=round((9.0 / 5.0 * self.value + 32 + self.offset), 2)
+                self.temp = round((9.0 / 5.0 * self.temp + 32 + self.offset), 2)
 
-            if self.value < self.low_filter or self.value > self.high_filter:
-                self.push_update(self.value_old)
-            else:
+            if self.value_old == 9999:
+                self.value_old = self.temp
+
+            if self.temp < self.low_filter or self.temp > self.high_filter:
+                self.temp = self.value_old
+            if abs(self.temp-self.value_old) < self.delta_filter:
+                self.value=self.temp
                 self.log_data(self.value)
                 self.push_update(self.value)
                 self.value_old = self.value
+                counter = 0
+            else:
+                if counter < 5:
+                    self.value=self.value_old
+                    self.log_data(self.value_old)
+                    self.push_update(self.value_old)
+                    counter +=1
+                else:
+                    counter = 0
+                    self.value = self.temp
+                    self.value_old = self.temp
+                    self.log_data(self.value)
+                    self.push_update(self.value)
+
             await asyncio.sleep(self.Interval)
     
     def get_state(self):

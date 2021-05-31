@@ -29,6 +29,12 @@ The code for the request to the max chip is from https://github.com/steve71/MAX3
 
 - Changelog:
 
+	- 29.05.21 (0.0.9): Added filter function to filter out outliers
+
+	- 14.04.21 (0.0.8): Adaption for properties (updated dataclass.py in cbpi)
+
+	- 09.04.21 (0.0.7): Fix in offset handling in case value is not None but empty
+
 	- 15.03.21 (0.0.6): Change to supprt cbpi >= 4.0.0.31
  
 	- 20.02.21 (0.0.4): Change to support cbpi >= 4.0.0.24. Added sensor log fucntionality
