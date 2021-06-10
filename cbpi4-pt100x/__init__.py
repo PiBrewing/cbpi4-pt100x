@@ -61,8 +61,12 @@ class CustomSensor(CBPiSensor):
         self.ConfigReg = self.props.get("ConfigText")[1:5]
         self.Interval = int(self.props.get("Interval",5))
         self.delta_filter = float(self.props.get("ignore_delta",1))
+        logging.info(self.delta_filter)
         self.value_old = 9999
-        counter = 0
+        self.max_counter = 1
+        self.counter = 0
+        self.alpha = 0.5
+
 
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
                
@@ -83,21 +87,22 @@ class CustomSensor(CBPiSensor):
             if self.temp < self.low_filter or self.temp > self.high_filter:
                 self.temp = self.value_old
             if abs(self.temp-self.value_old) < self.delta_filter:
-                self.value=self.temp
+                self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
                 self.log_data(self.value)
                 self.push_update(self.value)
                 self.value_old = self.value
-                counter = 0
+                self.counter = 0
             else:
-                if counter < 5:
+                logging.info("High Delta temp {}".format(self.temp))
+                if self.counter < self.max_counter:
                     self.value=self.value_old
                     self.log_data(self.value_old)
                     self.push_update(self.value_old)
-                    counter +=1
+                    self.counter +=1
                 else:
-                    counter = 0
-                    self.value = self.temp
-                    self.value_old = self.temp
+                    self.counter = 0
+                    self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
+                    self.value_old = self.value
                     self.log_data(self.value)
                     self.push_update(self.value)
 
