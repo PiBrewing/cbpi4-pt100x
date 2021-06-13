@@ -29,14 +29,14 @@ The code for the request to the max chip is from https://github.com/steve71/MAX3
 
 - Changelog:
 
+	- 10.06.21 (0.0.10): Calculating average of 2 subsequent values. TODO: add parameter for this
+	- 29.05.21 (0.0.9): Added filter function to filter out outliers
+	- 14.04.21 (0.0.8): Adaption for properties (updated dataclass.py in cbpi)
+	- 09.04.21 (0.0.7): Fix in offset handling in case value is not None but empty
 	- 15.03.21 (0.0.6): Change to supprt cbpi >= 4.0.0.31
- 
 	- 20.02.21 (0.0.4): Change to support cbpi >= 4.0.0.24. Added sensor log fucntionality
-
 	- 14.02.21 (0.0.3): Updated function to retrieve temperature unit. Units will be changed automatically for sensor when settigs saved properly. No need to update the sensor 
-
 	- 09.02.21 (0.0.2): Added offset parameter and changed the GPIO.setmode. Currnetly, warnings are displayed during startup of CBPi. However, they cause typically no issues
-
 	- 05.02.21: Adpated code to run under cbpi4
 
 - Old versions:

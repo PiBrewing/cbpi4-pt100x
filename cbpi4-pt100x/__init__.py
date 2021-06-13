@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
     Property.Number(label="offset",configurable = True, default_value = 0, description="Offset for the PT Sensor (Default is 0)"),
     Property.Number(label="ignore_below",configurable = True, default_value = 0, description="Readings below this value will be ignored"),
     Property.Number(label="ignore_above",configurable = True,default_value = 100, description="Readings above this value will be ignored"),
+    Property.Number(label="ignore_delta",configurable = True,default_value = 1, description="Ignore reading if delta between two readings is above this value. Must be positive and 0 deaxctivates filter"),
+    Property.Number(label="alpha",configurable = True,default_value = 1, description="Calculate Average between 2 values. Must be between 0 and 1. 1 deactivates averaging"),
     Property.Select(label="ConfigText", options=["[0xB2] - 3 Wires Manual","[0xD2] - 3 Wires Auto","[0xA2] - 2 or 4 Wires Manual","[0xC2] - 2 or 4 Wires Auto"], description="Choose beetween 2, 3 or 4 wire PT100 & the Conversion mode at 60 Hz beetween Manual or Continuous Auto"),
     Property.Select(label="Interval", options=[1,5,10,30,60], description="Interval in Seconds")])
 
@@ -45,12 +47,13 @@ class CustomSensor(CBPiSensor):
     def __init__(self, cbpi, id, props):
         super(CustomSensor, self).__init__(cbpi, id, props)
         self.value = 0
+        self.temp = 0
         self.value_old = 0
         self.misoPin = 9
         self.mosiPin = 10
         self.clkPin  = 11
 
-        self.csPin = int(self.props.get("csPin"))
+        self.csPin = int(self.props.get("csPin",17))
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
         self.offset = float(self.props.get("offset",0))
@@ -58,7 +61,21 @@ class CustomSensor(CBPiSensor):
         self.high_filter = float(self.props.get("ignore_above",100))
         self.ConfigReg = self.props.get("ConfigText")[1:5]
         self.Interval = int(self.props.get("Interval",5))
- 
+        self.delta_filter = float(self.props.get("ignore_delta",0))
+        if self.delta_filter < 0:
+            self.delta_filter = 0
+
+        self.alpha = float(self.props.get("alpha",1))
+        if self.alpha >= 1 or self.alpha <= 0:
+            self.alpha = 1
+
+        self.value_old = 9999
+        # defines how ofte a large delta can be rejected
+        self.max_counter = 1
+        # counts subsequent rejected values
+        self.counter = 0
+
+
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
                
     async def run(self):
@@ -66,18 +83,46 @@ class CustomSensor(CBPiSensor):
         while self.running == True:
             # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
             self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
-            self.value = self.max.readTemp()
+            self.temp = self.max.readTemp()
             if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
-                self.value=round((self.value + self.offset),2)
+                self.temp = round((self.temp + self.offset),2)
             else: # Report temp in F if unit selected in settings
-                self.value=round((9.0 / 5.0 * self.value + 32 + self.offset), 2)
+                self.temp = round((9.0 / 5.0 * self.temp + 32 + self.offset), 2)
 
-            if self.value < self.low_filter or self.value > self.high_filter:
-                self.push_update(self.value_old)
-            else:
+            if self.value_old == 9999:
+                self.value_old = self.temp
+
+            if self.temp < self.low_filter or self.temp > self.high_filter:
+                self.temp = self.value_old
+            ## 0 deactivates delta Filter
+            if self.delta_filter == 0:
+                self.counter = 0
+                self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
+                self.value_old = self.value
                 self.log_data(self.value)
                 self.push_update(self.value)
-                self.value_old = self.value
+            # active delta filter
+            else:
+                if abs(self.temp-self.value_old) < self.delta_filter:
+                    self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
+                    self.log_data(self.value)
+                    self.push_update(self.value)
+                    self.value_old = self.value
+                    self.counter = 0
+                else:
+                    logging.info("High Delta temp {}".format(self.temp))
+                    if self.counter < self.max_counter:
+                        self.value=self.value_old
+                        self.log_data(self.value_old)
+                        self.push_update(self.value_old)
+                        self.counter +=1
+                    else:
+                        self.counter = 0
+                        self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
+                        self.value_old = self.value
+                        self.log_data(self.value)
+                        self.push_update(self.value)
+
             await asyncio.sleep(self.Interval)
     
     def get_state(self):
