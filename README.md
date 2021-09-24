@@ -10,8 +10,8 @@ Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt
 
 - Software installation:
 
-	- pip install cbpi4-pt100x
-	- or install from repo
+	- sudo pip3 install cbpi4-pt100x
+	- or install from repo: sudo pip3 install https://github.com/avollkopf/cbpi4-pt100x/archive/main.zip
 	- cbpi add cbpi4-pt100x
 
 
@@ -29,7 +29,7 @@ The code for the request to the max chip is from https://github.com/steve71/MAX3
 
 - Changelog:
 
-	- 10.06.21 (0.0.10): Calculating average of 2 subsequent values. TODO: add parameter for this
+	- 10.06.21 (0.0.10): Calculating average of 2 subsequent values.
 	- 29.05.21 (0.0.9): Added filter function to filter out outliers
 	- 14.04.21 (0.0.8): Adaption for properties (updated dataclass.py in cbpi)
 	- 09.04.21 (0.0.7): Fix in offset handling in case value is not None but empty
