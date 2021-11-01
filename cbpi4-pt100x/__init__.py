@@ -77,23 +77,29 @@ class CustomSensor(CBPiSensor):
 
 
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
-               
+            
+    def read(self):
+        # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
+        self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
+        temp = self.max.readTemp()
+        if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
+            temp = round((temp + self.offset),2)
+        else: # Report temp in F if unit selected in settings
+            temp = round((9.0 / 5.0 * temp + 32 + self.offset), 2)
+        return temp
+
     async def run(self):
 
         while self.running == True:
-            # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
-            self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
-            self.temp = self.max.readTemp()
-            if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
-                self.temp = round((self.temp + self.offset),2)
-            else: # Report temp in F if unit selected in settings
-                self.temp = round((9.0 / 5.0 * self.temp + 32 + self.offset), 2)
-
+            self.temp = self.read()
             if self.value_old == 9999:
                 self.value_old = self.temp
 
             if self.temp < self.low_filter or self.temp > self.high_filter:
-                self.temp = self.value_old
+                await asyncio.sleep(0.05)
+                self.temp = self.read()
+                if self.temp < self.low_filter or self.temp > self.high_filter:
+                    self.temp = self.value_old
             ## 0 deactivates delta Filter
             if self.delta_filter == 0:
                 self.counter = 0
@@ -103,25 +109,39 @@ class CustomSensor(CBPiSensor):
                 self.push_update(self.value)
             # active delta filter
             else:
-                if abs(self.temp-self.value_old) < self.delta_filter:
+                delta = abs(self.temp-self.value_old)
+                if delta < self.delta_filter:
                     self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
                     self.log_data(self.value)
                     self.push_update(self.value)
                     self.value_old = self.value
                     self.counter = 0
                 else:
-                    logging.info("High Delta temp {}".format(self.temp))
-                    if self.counter < self.max_counter:
-                        self.value=self.value_old
-                        self.log_data(self.value_old)
-                        self.push_update(self.value_old)
-                        self.counter +=1
-                    else:
-                        self.counter = 0
+                    logging.info("High Delta {}. Temp {}. Read another sample".format(delta,self.temp))
+                    await asyncio.sleep(0.05)
+                    self.temp = self.read()
+                    delta = abs(self.temp-self.value_old)
+                    if delta < self.delta_filter:
+                        logging.info("New value within limits: {}".format(self.temp))
                         self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
-                        self.value_old = self.value
                         self.log_data(self.value)
                         self.push_update(self.value)
+                        self.value_old = self.value
+                        self.counter = 0
+                    else:
+                        if self.counter < self.max_counter:
+                            logging.info("Using old temp sample: {}".fomrat(self.value_old))
+                            self.value=self.value_old
+                            self.log_data(self.value_old)
+                            self.push_update(self.value_old)
+                            self.counter +=1
+                        else:
+                            logging.info("Multiple amples in a row with increased delta. Using currentl reading")
+                            self.counter = 0
+                            self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
+                            self.value_old = self.value
+                            self.log_data(self.value)
+                            self.push_update(self.value)
 
             await asyncio.sleep(self.Interval)
     
