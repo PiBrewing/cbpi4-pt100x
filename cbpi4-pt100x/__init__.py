@@ -96,7 +96,7 @@ class CustomSensor(CBPiSensor):
                 self.value_old = self.temp
 
             if self.temp < self.low_filter or self.temp > self.high_filter:
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.2)
                 self.temp = self.read()
                 if self.temp < self.low_filter or self.temp > self.high_filter:
                     self.temp = self.value_old
@@ -118,7 +118,7 @@ class CustomSensor(CBPiSensor):
                     self.counter = 0
                 else:
                     logging.info("High Delta {}. Temp {}. Read another sample".format(delta,self.temp))
-                    await asyncio.sleep(0.05)
+                    await asyncio.sleep(0.2)
                     self.temp = self.read()
                     delta = abs(self.temp-self.value_old)
                     if delta < self.delta_filter:
