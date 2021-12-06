@@ -23,6 +23,7 @@
 
 import time, math
 import RPi.GPIO as GPIO
+import logging
 #import numpy
 
 class max31865(object):
@@ -43,7 +44,10 @@ class max31865(object):
 		self.ConfigReg = ConfigReg
 		self.ResSens = ResSens
 		self.setupGPIO()
-		
+
+	def __del__(self):
+		logging.info("Delete max38165 object")
+
 	def setupGPIO(self):
                 mode = GPIO.getmode()
                 if (mode == None):

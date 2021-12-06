@@ -71,7 +71,7 @@ class CustomSensor(CBPiSensor):
 
         self.value_old = 9999
         # defines how ofte a large delta can be rejected
-        self.max_counter = 1
+        self.max_counter = 2
         # counts subsequent rejected values
         self.counter = 0
 
@@ -81,10 +81,7 @@ class CustomSensor(CBPiSensor):
     def read(self):
         # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
         self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
-        try:
-            temp = self.max.readTemp()
-        except:
-            temp = 9999
+        temp = self.max.readTemp()
         if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
             temp = round((temp + self.offset),2)
         else: # Report temp in F if unit selected in settings
@@ -99,10 +96,7 @@ class CustomSensor(CBPiSensor):
                 self.value_old = self.temp
 
             if self.temp < self.low_filter or self.temp > self.high_filter:
-                await asyncio.sleep(0.2)
-                self.temp = self.read()
-                if self.temp < self.low_filter or self.temp > self.high_filter:
-                    self.temp = self.value_old
+                self.temp = self.value_old
             ## 0 deactivates delta Filter
             if self.delta_filter == 0:
                 self.counter = 0
@@ -120,31 +114,18 @@ class CustomSensor(CBPiSensor):
                     self.value_old = self.value
                     self.counter = 0
                 else:
-                    logging.info("High Delta {}. Temp {}. Read another sample".format(delta,self.temp))
-                    await asyncio.sleep(0.2)
-                    self.temp = self.read()
-                    delta = abs(self.temp-self.value_old)
-                    if delta < self.delta_filter:
-                        logging.info("New value within limits: {}".format(self.temp))
+                    logging.info("High Delta temp {}".format(self.temp))
+                    if self.counter < self.max_counter:
+                        self.value=self.value_old
+                        self.log_data(self.value_old)
+                        self.push_update(self.value_old)
+                        self.counter +=1
+                    else:
+                        self.counter = 0
                         self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
+                        self.value_old = self.value
                         self.log_data(self.value)
                         self.push_update(self.value)
-                        self.value_old = self.value
-                        self.counter = 0
-                    else:
-                        if self.counter < self.max_counter:
-                            logging.info("Using old temp sample: {}".fomrat(self.value_old))
-                            self.value=self.value_old
-                            self.log_data(self.value_old)
-                            self.push_update(self.value_old)
-                            self.counter +=1
-                        else:
-                            logging.info("Multiple amples in a row with increased delta. Using currentl reading")
-                            self.counter = 0
-                            self.value = round((self.temp * self.alpha + self.value_old * ( 1 - self.alpha)),2)
-                            self.value_old = self.value
-                            self.log_data(self.value)
-                            self.push_update(self.value)
 
             await asyncio.sleep(self.Interval)
     
