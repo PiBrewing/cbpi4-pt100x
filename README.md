@@ -12,7 +12,6 @@ Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt
 
 - sudo pip3 install cbpi4-pt100x
 - or install from repo: sudo pip3 install https://github.com/avollkopf/cbpi4-pt100x/archive/main.zip
-- cbpi add cbpi4-pt100x
 
 
 ### Hardware Installation:
@@ -29,6 +28,7 @@ The code for the request to the max chip is from https://github.com/steve71/MAX3
 
 ### Changelog:
 
+- 10.05.22: (0.1.3) updated readme (removed cbpi add)
 - 10.05.22: (0.1.2) Removed cbpi dependency
 - 08.12.21: (0.1.1) Removed resampling as it caused issues with respect to long term stability (sensor unresponsivness)
 - 01.12.21: (0.1.0) Improved handling of resampling in case of issues (test)	
