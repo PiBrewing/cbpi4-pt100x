@@ -29,6 +29,7 @@ The code for the request to the max chip is from https://github.com/steve71/MAX3
 
 ### Changelog:
 
+- 10.05.22: (0.1.2) Removed cbpi dependency
 - 08.12.21: (0.1.1) Removed resampling as it caused issues with respect to long term stability (sensor unresponsivness)
 - 01.12.21: (0.1.0) Improved handling of resampling in case of issues (test)	
 - 01.11.21: (0.0.11) Experimental update under development branch: Read another sample if delta between two values is too high
