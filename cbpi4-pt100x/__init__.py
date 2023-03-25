@@ -80,11 +80,12 @@ class CustomSensor(CBPiSensor):
 
         self.lastlog=0
         self.sensor=self.get_sensor(self.id)
-        self.reducedfrequency=int(self.props.get("ReducedLogging", 60))
+        self.reducedfrequency=float(self.props.get("ReducedLogging", 60))
         
         self.kettleid=self.props.get("Kettle", None)
-        self.reducedlogging=True
         self.fermenterid=self.props.get("Fermenter", None)
+
+        self.reducedlogging=True if self.kettleid or self.fermenterid else False
 
         if self.kettleid is not None and self.fermenterid is not None:
             self.reducedlogging=False
@@ -92,9 +93,6 @@ class CustomSensor(CBPiSensor):
         if self.Interval >= self.reducedfrequency:
             self.reducedlogging=False
             self.cbpi.notify("OneWire Sensor", "Sensor '" + str(self.sensor.name) + "' has shorter or equal 'reduced logging' compared to regular interval.", NotificationType.WARNING, action=[NotificationAction("OK", self.Confirm)])
-
-        self.kettle = self.get_kettle(self.kettleid) if self.kettleid is not None else None 
-        self.fermenter = self.get_fermenter(self.fermenterid) if self.fermenterid is not None else None
 
 
         self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
@@ -110,6 +108,8 @@ class CustomSensor(CBPiSensor):
         return temp
 
     async def run(self):
+        self.kettle = self.get_kettle(self.kettleid) if self.kettleid is not None else None 
+        self.fermenter = self.get_fermenter(self.fermenterid) if self.fermenterid is not None else None
 
         while self.running == True:
             self.temp = self.read()
