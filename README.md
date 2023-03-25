@@ -11,7 +11,7 @@ Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt
 ### Software installation:
 
 - sudo pip3 install cbpi4-pt100x
-- or install from repo: sudo pip3 install https://github.com/avollkopf/cbpi4-pt100x/archive/main.zip
+- or install from repo: sudo pip3 install https://github.com/PiBrewing/cbpi4-pt100x/archive/main.zip
 
 
 ### Hardware Installation:
@@ -28,6 +28,7 @@ The code for the request to the max chip is from https://github.com/steve71/MAX3
 
 ### Changelog:
 
+- 25.03.23: (0.1.4) Reduced logging options in case of Kettle or Fermenter inactivity
 - 10.05.22: (0.1.3) updated readme (removed cbpi add)
 - 10.05.22: (0.1.2) Removed cbpi dependency
 - 08.12.21: (0.1.1) Removed resampling as it caused issues with respect to long term stability (sensor unresponsivness)
