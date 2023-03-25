@@ -7,11 +7,11 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='cbpi4-pt100x',
-      version='0.1.3',
+      version='0.1.4.a1',
       description='CraftBeerPi4 PT100/PT1000 Sensor Plugin',
       author='Alexander Vollkopf',
       author_email='avollkopf@web.de',
-      url='https://github.com/avollkopf/cbpi4-pt100x',
+      url='https://github.com/PiBrewing/cbpi4-pt100x',
       include_package_data=True,
       package_data={
         # If any package contains *.txt or *.rst files, include them:
