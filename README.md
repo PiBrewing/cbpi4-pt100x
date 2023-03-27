@@ -27,7 +27,7 @@ Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt
 The code for the request to the max chip is from https://github.com/steve71/MAX31865 so all credit really goes there... i slightly modified the code from the craftbeerpi v3 plugin(https://github.com/thegreathoe/cbpi-pt100-sensor) to allow also the usage of tha PT1000 and added some other parameters.
 
 ### Changelog:
-- 27.03.23: (0.1.5) No logging options in case of Kettle or Fermenter inactivity (set reducedlogging to 0)
+- 27.03.23: (0.1.6) No logging options in case of Kettle or Fermenter inactivity (set reducedlogging to 0)
 - 25.03.23: (0.1.4) Reduced logging options in case of Kettle or Fermenter inactivity
 - 10.05.22: (0.1.3) updated readme (removed cbpi add)
 - 10.05.22: (0.1.2) Removed cbpi dependency

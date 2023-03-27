@@ -92,7 +92,7 @@ class CustomSensor(CBPiSensor):
         if self.kettleid is not None and self.fermenterid is not None:
             self.reducedlogging=False
             self.cbpi.notify("OneWire Sensor", "Sensor '" + str(self.sensor.name) + "' cant't have Fermenter and Kettle defined for reduced logging.", NotificationType.WARNING, action=[NotificationAction("OK", self.Confirm)])
-        if self.Interval >= self.reducedfrequency:
+        if (self.reducedfrequency != 0) and (self.Interval >= self.reducedfrequency):
             self.reducedlogging=False
             self.cbpi.notify("OneWire Sensor", "Sensor '" + str(self.sensor.name) + "' has shorter or equal 'reduced logging' compared to regular interval.", NotificationType.WARNING, action=[NotificationAction("OK", self.Confirm)])
 
