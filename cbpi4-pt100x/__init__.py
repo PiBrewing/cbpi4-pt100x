@@ -175,7 +175,6 @@ class CustomSensor(CBPiSensor):
             await asyncio.sleep(self.Interval)
 
     async def logvalue(self,value=None):
-        if self.reducedfrequency != 0:
             currentvalue=self.value if value is None else value
             now=time.time()            
             if self.kettle is not None:
@@ -189,11 +188,12 @@ class CustomSensor(CBPiSensor):
                     self.lastlog = time.time()
                 else:
                     logging.info("Kettle Inactive")
-                    if now >= self.lastlog + self.reducedfrequency:
-                        self.log_data(currentvalue)
-                        self.lastlog = time.time()
-                        logging.info("Logged with reduced freqency")
-                        pass   
+                    if self.reducedfrequency != 0:                    
+                        if now >= self.lastlog + self.reducedfrequency:
+                            self.log_data(currentvalue)
+                            self.lastlog = time.time()
+                            logging.info("Logged with reduced freqency")
+                            pass   
 
             if self.fermenter is not None:
                 try:
@@ -206,11 +206,12 @@ class CustomSensor(CBPiSensor):
                     self.lastlog = time.time()
                 else:
                     logging.info("Fermenter Inactive")
-                    if now >= self.lastlog + self.reducedfrequency:
-                        self.log_data(currentvalue)
-                        self.lastlog = time.time()
-                        logging.info("Logged with reduced freqency")
-                        pass            
+                    if self.reducedfrequency != 0:                       
+                        if now >= self.lastlog + self.reducedfrequency:
+                            self.log_data(currentvalue)
+                            self.lastlog = time.time()
+                            logging.info("Logged with reduced freqency")
+                            pass            
 
     def get_state(self):
         return dict(value=self.value)
