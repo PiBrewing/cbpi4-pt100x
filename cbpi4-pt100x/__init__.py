@@ -25,8 +25,7 @@ logger = logging.getLogger(__name__)
     Property.Select(label="Interval", options=[1,5,10,30,60], description="Interval in Seconds"),
     Property.Kettle(label="Kettle", description="Reduced logging if Kettle is inactive (only Kettle or Fermenter to be selected)"),
     Property.Fermenter(label="Fermenter", description="Reduced logging in seconds if Fermenter is inactive (only Kettle or Fermenter to be selected)"),
-    Property.Number(label="ReducedLogging", configurable=True, description="Reduced logging frequency in seconds if selected Kettle or Fermenter is inactive (default is 60 sec)")
-             ])
+    Property.Number(label="ReducedLogging", configurable=True, description="Reduced logging frequency in seconds if selected Kettle or Fermenter is inactive (default: 60 sec | disabled: 0)")])
 
 		#
 		# Config Register
@@ -80,7 +79,11 @@ class CustomSensor(CBPiSensor):
 
         self.lastlog=0
         self.sensor=self.get_sensor(self.id)
+
         self.reducedfrequency=float(self.props.get("ReducedLogging", 60))
+        if self.reducedfrequency < 0:
+            self.reducedfrequency = 0
+            
         
         self.kettleid=self.props.get("Kettle", None)
         self.fermenterid=self.props.get("Fermenter", None)
@@ -90,7 +93,8 @@ class CustomSensor(CBPiSensor):
         if self.kettleid is not None and self.fermenterid is not None:
             self.reducedlogging=False
             self.cbpi.notify("OneWire Sensor", "Sensor '" + str(self.sensor.name) + "' cant't have Fermenter and Kettle defined for reduced logging.", NotificationType.WARNING, action=[NotificationAction("OK", self.Confirm)])
-        if self.Interval >= self.reducedfrequency:
+
+        if (self.reducedfrequency != 0) and (self.Interval >= self.reducedfrequency):
             self.reducedlogging=False
             self.cbpi.notify("OneWire Sensor", "Sensor '" + str(self.sensor.name) + "' has shorter or equal 'reduced logging' compared to regular interval.", NotificationType.WARNING, action=[NotificationAction("OK", self.Confirm)])
 
@@ -106,6 +110,9 @@ class CustomSensor(CBPiSensor):
         else: # Report temp in F if unit selected in settings
             temp = round((9.0 / 5.0 * temp + 32 + self.offset), 2)
         return temp
+
+    async def Confirm(self, **kwargs):
+        pass
 
     async def run(self):
         self.kettle = self.get_kettle(self.kettleid) if self.kettleid is not None else None 
@@ -168,41 +175,43 @@ class CustomSensor(CBPiSensor):
             await asyncio.sleep(self.Interval)
 
     async def logvalue(self,value=None):
-        currentvalue=self.value if value is None else value
-        now=time.time()            
-        if self.kettle is not None:
-            try:
-                kettlestatus=self.kettle.instance.state
-            except:
-                kettlestatus=False
-            if kettlestatus:
-                self.log_data(currentvalue)
-                logging.info("Kettle Active")
-                self.lastlog = time.time()
-            else:
-                logging.info("Kettle Inactive")
-                if now >= self.lastlog + self.reducedfrequency:
+            currentvalue=self.value if value is None else value
+            now=time.time()            
+            if self.kettle is not None:
+                try:
+                    kettlestatus=self.kettle.instance.state
+                except:
+                    kettlestatus=False
+                if kettlestatus:
                     self.log_data(currentvalue)
+                    logging.info("Kettle Active")
                     self.lastlog = time.time()
-                    logging.info("Logged with reduced freqency")
-                    pass   
+                else:
+                    logging.info("Kettle Inactive")
+                    if self.reducedfrequency != 0:                    
+                        if now >= self.lastlog + self.reducedfrequency:
+                            self.log_data(currentvalue)
+                            self.lastlog = time.time()
+                            logging.info("Logged with reduced freqency")
+                            pass   
 
-        if self.fermenter is not None:
-            try:
-                fermenterstatus=self.fermenter.instance.state
-            except:
-                fermenterstatus=False
-            if fermenterstatus:
-                self.log_data(currentvalue)
-                logging.info("Fermenter Active")
-                self.lastlog = time.time()
-            else:
-                logging.info("Fermenter Inactive")
-                if now >= self.lastlog + self.reducedfrequency:
+            if self.fermenter is not None:
+                try:
+                    fermenterstatus=self.fermenter.instance.state
+                except:
+                    fermenterstatus=False
+                if fermenterstatus:
                     self.log_data(currentvalue)
+                    logging.info("Fermenter Active")
                     self.lastlog = time.time()
-                    logging.info("Logged with reduced freqency")
-                    pass            
+                else:
+                    logging.info("Fermenter Inactive")
+                    if self.reducedfrequency != 0:                       
+                        if now >= self.lastlog + self.reducedfrequency:
+                            self.log_data(currentvalue)
+                            self.lastlog = time.time()
+                            logging.info("Logged with reduced freqency")
+                            pass            
 
     def get_state(self):
         return dict(value=self.value)
