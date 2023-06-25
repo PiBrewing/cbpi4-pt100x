@@ -150,7 +150,7 @@ class CustomSensor(CBPiSensor):
                     self.value_old = self.value
                     self.counter = 0
                 else:
-                    logging.warning("High Delta temp {}".format(self.temp))
+                    logging.warning("Sensor {}: High Delta temp {}".format(self.sensor.name, self.temp))
                     if self.counter < self.max_counter:
                         self.value=self.value_old
                         self.push_update(self.value_old)

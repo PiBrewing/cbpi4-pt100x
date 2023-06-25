@@ -48,6 +48,7 @@ Please note that the max board delivers readings above 900C if no sensor is conn
 
 ### Changelog:
 
+- 25.06.23: (0.1.10) Better logging description on high delta value
 - 09.06.23: (0.1.9) Updated descriptions for Sensor parameters on Hardware page. Updated README.
 - 28.03.23: (0.1.8) No logging options in case of Kettle or Fermenter inactivity (set reducedlogging to 0)
 - 25.03.23: (0.1.4) Reduced logging options in case of Kettle or Fermenter inactivity
