@@ -10,8 +10,10 @@ Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt
 
 ## Software installation:
 
-- sudo pip3 install cbpi4-pt100x
-- or install from repo: sudo pip3 install https://github.com/PiBrewing/cbpi4-pt100x/archive/main.zip
+Please have a look at the [Craftbeerpi4 Documentation](https://openbrewing.gitbook.io/craftbeerpi4_support/readme/plugin-installation)
+
+- Package name: cbpi4-pt100x
+- Package link: https://github.com/PiBrewing/cbpi4-pt100x/archive/main.zip
 
 
 ## Hardware Installation:
