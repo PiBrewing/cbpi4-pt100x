@@ -9,6 +9,9 @@ from . import max31865
 from subprocess import call
 import time
 from cbpi.api.dataclasses import NotificationAction, NotificationType
+import board
+import digitalio
+import adafruit_max31855
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +58,11 @@ class CustomSensor(CBPiSensor):
         self.mosiPin = 10
         self.clkPin  = 11
 
+        self.pins = [board.D0, board.D1, board.D2, board.D3, board.D4, board.D5, board.D6, board.D7, board.D8, board.D12, board.D13, board.D14, board.D15, board.D16, board.D17, board.D18, board.D19, board.D20, board.D21, board.D22, board.D23, board.D24, board.D25, board.D26, board.D27]
         self.csPin = int(self.props.get("csPin",17))
+        spi = board.SPI()
+        cs = digitalio.DigitalInOut(self.pins[self.csPin])
+
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
         self.offset = float(self.props.get("offset",0))
@@ -99,12 +106,14 @@ class CustomSensor(CBPiSensor):
             self.cbpi.notify("OneWire Sensor", "Sensor '" + str(self.sensor.name) + "' has shorter or equal 'reduced logging' compared to regular interval.", NotificationType.WARNING, action=[NotificationAction("OK", self.Confirm)])
 
 
-        self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
+        #self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
+        self.max = adafruit_max31855.MAX31855(spi, cs)
             
     def read(self):
         # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
         self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
-        temp = self.max.readTemp()
+        #temp = self.max.readTemp()
+        temp= self.max.temperature
         if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
             temp = round((temp + self.offset),2)
         else: # Report temp in F if unit selected in settings
