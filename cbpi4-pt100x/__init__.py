@@ -11,7 +11,7 @@ import time
 from cbpi.api.dataclasses import NotificationAction, NotificationType
 import board
 import digitalio
-import adafruit_max31855
+from adafruit_max31865 import MAX31865
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
     Property.Number(label="ignore_above",configurable = True,default_value = 100, description="Readings above this value will be ignored"),
     Property.Number(label="ignore_delta",configurable = True,default_value = 1, description="Ignore reading if delta between two readings is above this value. Must be positive (0: inactive)"),
     Property.Number(label="alpha",configurable = True,default_value = 1, description="Calculate Average between 2 values. Must be between 0 and 1. 1 deactivates averaging"),
-    #Property.Select(label="ConfigText", options=["[0xB2] - 3 Wires Manual","[0xD2] - 3 Wires Auto","[0xA2] - 2 or 4 Wires Manual","[0xC2] - 2 or 4 Wires Auto"], description="Choose beetween 2, 3 or 4 wire PT100 & the Conversion mode at 60 Hz beetween Manual or Continuous Auto"),
+    Property.Select(label="Wires", options = [2,3,4], description="Choose between 2, 3 or 4 wire PT100 / PT1000 connection"),
     Property.Select(label="Interval", options=[1,5,10,30,60], description="Interval in Seconds"),
     Property.Kettle(label="Kettle", description="Reduced logging if Kettle is inactive (only Kettle or Fermenter to be selected)"),
     Property.Fermenter(label="Fermenter", description="Reduced logging in seconds if Fermenter is inactive (only Kettle or Fermenter to be selected)"),
@@ -62,13 +62,12 @@ class CustomSensor(CBPiSensor):
         self.csPin = int(self.props.get("csPin",17))
         spi = board.SPI()
         cs = digitalio.DigitalInOut(self.pins[self.csPin])
-
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
         self.offset = float(self.props.get("offset",0))
         self.low_filter = float(self.props.get("ignore_below",0))
         self.high_filter = float(self.props.get("ignore_above",100))
-        #self.ConfigReg = self.props.get("ConfigText")[1:5]
+        self.Wires = int(self.props.get("Wires",2))
         self.Interval = int(self.props.get("Interval",5))
         self.delta_filter = float(self.props.get("ignore_delta",0))
         if self.delta_filter < 0:
@@ -107,13 +106,14 @@ class CustomSensor(CBPiSensor):
 
 
         #self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
-        self.max = adafruit_max31855.MAX31855(spi, cs)
+        self.max = MAX31865(spi, cs, rtd_nominal=self.ResSens, ref_resistor=self.RefRest, wires=self.Wires)
             
     def read(self):
         # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
         self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
         #temp = self.max.readTemp()
         temp= self.max.temperature
+
         if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
             temp = round((temp + self.offset),2)
         else: # Report temp in F if unit selected in settings
