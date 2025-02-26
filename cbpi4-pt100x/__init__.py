@@ -1,11 +1,11 @@
 
 # -*- coding: utf-8 -*-
-from aiohttp import web
+#from aiohttp import web
 import logging
 import asyncio
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 from cbpi.api import *
-from . import max31865
+#from . import max31865
 from subprocess import call
 import time
 from cbpi.api.dataclasses import NotificationAction, NotificationType
