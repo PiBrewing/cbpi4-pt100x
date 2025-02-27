@@ -113,6 +113,7 @@ class CustomSensor(CBPiSensor):
             self.max = MAX31865(spi, cs, rtd_nominal=self.ResSens, ref_resistor=self.RefRest, wires=self.Wires)
         else:
             self.cbpi.notify("PT100X Sensor", "Sensor '" + str(self.sensor.name) + "' failed to initialize MAX31865. Please check raspi in config, if SPI is enabled", NotificationType.ERROR, action=[NotificationAction("OK", self.Confirm)])
+            logging.error("Sensor {}: Failed to initialize MAX31865. Please check raspi in config, if SPI is enabled".format(self.sensor.name))
             self.max = None
             
     def read(self):
