@@ -1,10 +1,8 @@
-# !!! THIS VERSION IS ONLY FOR TESTING PURPOSES. DO NOT INSTALL ON YOUR SYSTEM !!!
+# !!! THIS VERSION IS CURRENTLY ONLY WORKING WITH THE CBPI gpiotest branch !!!
 
 # Craftbeerpi4 Plugin for PT100/PT1000 Sensor
 
-PT100 / PT1000 probes using a max31865 chip.  for wiring go to https://github.com/thegreathoe/cbpi-pt100-sensor/ updated 8/2/17
-
-You can select the conversion mode and number of wires on your probe in software.  You will need to select a setting to get the probe working after an update.
+PT100 / PT1000 probes using an adafruit based max31865 chip.  for wiring go to [this page](https://learn.adafruit.com/adafruit-max31865-rtd-pt100-amplifier/).
 
 You will need to set the reference resistors on the craftbeerpi hardware page!  My max31865 chip uses a 4,3 kohm resistor for the PT1000. It might be 430 ohm for a PT100 board
 
@@ -26,7 +24,9 @@ Please have a look at the [Craftbeerpi4 Documentation](https://openbrewing.gitbo
 - mosiPin = 10
 - clkPin = 11
 
-The code for the request to the max chip is from https://github.com/steve71/MAX31865 so all credit really goes there... i slightly modified the code from the craftbeerpi v3 plugin(https://github.com/thegreathoe/cbpi-pt100-sensor) to allow also the usage of tha PT1000 and added some other parameters.
+The code is installing the adafruit circuitpython max31865 library. It requires the RPi.GPIO package for older Pis (<=4) nd the rpi-lgpio pacakge for the Pi 5.
+
+The installation routine (setup.py in cbpi has been modified to match these requirements) (currently it is only valid for the gpiotest branch). Existing installations must be redone, but your config can be still used (pipx uninstall cbpi4 and then install cbpi4 as described in the documentation. This will be updated later. Then install your plugins)
 
 ## Sensor Configuration
 
@@ -40,7 +40,7 @@ The sensor must be configured on the hardware page. The following parameters mus
 - ignore_below: Ignores Temp readings below this value (0: deactivated)
 - ignore_delta: If you experience issues with 'jumping' temp readings, you can define a threshold (only positive values are allowed) for the difference between two readings. If the difference between two subsequent readings is higher than the threshold, the value will be ignored. If the next reading is also higher (lower), this value is used / logged. (0: deactivated)
 - alpha: calculates the average between 2 subsequent values. Must be between 0 and 1. (1: deactivated). 0.5 yields for instance in the average of two subsequent readings.
-- ConfigText: You need to set this parameter to the configuration of your maxboard / sensor.
+- Wires: You need to set this parameter to the configuration of your RTD (2,3 or 4 wire).
 - Interval: defines the frequency of sensor readings in seconds.
 - Kettle/Fermenter: You can select a Kettle OR Fermenter if you want to activate reduced sensor logging during inactivity of the Kettle / Fermenter
 - Reducedlogging: Defines the logging interval for reduced logging in seconds (e.g. 300 would result in logging every 5 Minutes when the Kettle / Fermenter logic is not acitve) (0: no sensor logging during inactivity)
@@ -52,6 +52,7 @@ Please note that the max board delivers readings above 900C if no sensor is conn
 
 ### Changelog:
 
+- 27.02.25: (0.2.0.a5) Retire the old mx31865 library and move to the adafruit-circuitpython-max31865 library. This should prevent the false readings and the jumps between data points
 - 25.06.23: (0.1.10) Better logging description on high delta value
 - 09.06.23: (0.1.9) Updated descriptions for Sensor parameters on Hardware page. Updated README.
 - 28.03.23: (0.1.8) No logging options in case of Kettle or Fermenter inactivity (set reducedlogging to 0)
