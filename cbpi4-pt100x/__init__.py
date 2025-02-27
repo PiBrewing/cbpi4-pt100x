@@ -60,7 +60,10 @@ class CustomSensor(CBPiSensor):
 
         self.pins = [board.D0, board.D1, board.D2, board.D3, board.D4, board.D5, board.D6, board.D7, board.D8, board.D9, board.D10, board.D11, board.D12, board.D13, board.D14, board.D15, board.D16, board.D17, board.D18, board.D19, board.D20, board.D21, board.D22, board.D23, board.D24, board.D25, board.D26, board.D27]
         self.csPin = int(self.props.get("csPin",17))
-        spi = board.SPI()
+        try:
+            spi = board.SPI()
+        except:
+            spi = None
         cs = digitalio.DigitalInOut(self.pins[self.csPin])
         self.ResSens = int(self.props.get("ResSens",1000))
         self.RefRest = int(self.props.get("RefRest",4300))
@@ -106,13 +109,20 @@ class CustomSensor(CBPiSensor):
 
 
         #self.max = max31865.max31865(self.csPin,self.misoPin, self.mosiPin, self.clkPin, self.ResSens, self.RefRest, int(self.ConfigReg,16))
-        self.max = MAX31865(spi, cs, rtd_nominal=self.ResSens, ref_resistor=self.RefRest, wires=self.Wires)
+        if spi is not None:
+            self.max = MAX31865(spi, cs, rtd_nominal=self.ResSens, ref_resistor=self.RefRest, wires=self.Wires)
+        else:
+            self.cbpi.notify("PT100X Sensor", "Sensor '" + str(self.sensor.name) + "' failed to initialize MAX31865. Please check raspi in config, if SPI is enabled", NotificationType.ERROR, action=[NotificationAction("OK", self.Confirm)])
+            self.max = None
             
     def read(self):
         # get current Unit setting for temperature (Sensor needs to be saved again or system restarted for now)
         self.TEMP_UNIT=self.get_config_value("TEMP_UNIT", "C")
         #temp = self.max.readTemp()
-        temp= self.max.temperature
+        if self.max is not None:
+            temp = self.max.temperature
+        else:
+            temp = 0
 
         if self.TEMP_UNIT == "C": # Report temp in C if nothing else is selected in settings
             temp = round((temp + self.offset),2)
