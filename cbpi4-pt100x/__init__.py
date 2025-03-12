@@ -51,10 +51,9 @@ logger = logging.getLogger(__name__)
             options=[100, 1000],
             description="Select 100 for PT100 or 1000 for PT1000",
         ),
-        Property.Number(
+        Property.Select(
             label="RefRest",
-            configurable=True,
-            default_value=4300,
+            options=[430, 4300],
             description="Reference Resistor of the MAX31865 board (430 (PT100) or 4300 ohm (PT1000) depending on your board)",
         ),
         Property.Number(
