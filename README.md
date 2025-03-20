@@ -1,5 +1,3 @@
-# !!! THIS VERSION IS CURRENTLY ONLY WORKING WITH THE CBPI gpiotest branch !!!
-
 # Craftbeerpi4 Plugin for PT100/PT1000 Sensor
 
 PT100 / PT1000 probes using an adafruit based max31865 chip.  for wiring go to [this page](https://learn.adafruit.com/adafruit-max31865-rtd-pt100-amplifier/).
@@ -9,6 +7,8 @@ You will need to set the reference resistors on the craftbeerpi hardware page!  
 Using a max31865 board like: https://learn.adafruit.com/adafruit-max31865-rtd-pt100-amplifier/
 
 ## Software installation:
+
+This version requires Craftbeerpi V4 version 4.6.0 and above.
 
 Please have a look at the [Craftbeerpi4 Documentation](https://openbrewing.gitbook.io/craftbeerpi4_support/readme/plugin-installation)
 
@@ -24,9 +24,11 @@ Please have a look at the [Craftbeerpi4 Documentation](https://openbrewing.gitbo
 - mosiPin = 10
 - clkPin = 11
 
+SPI must be enabled on the Pi via raspi-config.
+
 The code is installing the adafruit circuitpython max31865 library. It requires the RPi.GPIO package for older Pis (<=4) nd the rpi-lgpio pacakge for the Pi 5.
 
-The installation routine (setup.py in cbpi has been modified to match these requirements) (currently it is only valid for the gpiotest branch). Existing installations must be redone, but your config can be still used (pipx uninstall cbpi4 and then install cbpi4 as described in the documentation. This will be updated later. Then install your plugins)
+The installation routine (setup.py in cbpi has been modified to match these requirements). Existing installations on Pi4 and older boards must be redone, but your config can be still used (pipx uninstall cbpi4 and then install cbpi4 as described in the documentation. This will be updated later. Then install your plugins)
 
 ## Sensor Configuration
 
@@ -34,7 +36,7 @@ The sensor must be configured on the hardware page. The following parameters mus
 
 - csPin: The BCM number of the GPIO you max board cs pin is connected to.
 - ResSens: Reistance in ohm of your sensor. Select 1000 for PT1000 or 100 for PT100.
-- RefRest: Resistance in ohm of your reference resistor on your max board. Typically 4300 for a PT100 board and 430 for a PT100 board. The value is typically listed on the resistor of your board (Please have a look [here](https://www.hobby-hour.com/electronics/smdcalc.php?fbclid=IwAR1frc48ImXjxPMLqCeVPX2SZEEDDhXrLxRsUWpZ_e1XeJnrN20qRXZOEo4) for smd resistance codings.)
+- RefRest: Resistance in ohm of your reference resistor on your max board. 4300 for a PT100 board and 430 for a PT100 board. The value is typically listed on the resistor of your board (Please have a look [here](https://www.hobby-hour.com/electronics/smdcalc.php?fbclid=IwAR1frc48ImXjxPMLqCeVPX2SZEEDDhXrLxRsUWpZ_e1XeJnrN20qRXZOEo4) for smd resistance codings.)
 - offset: Defines a temperature offset for your temp probe.
 - ignore_above: Ignores Temp readings above this value (0: deactivated)
 - ignore_below: Ignores Temp readings below this value (0: deactivated)
@@ -43,7 +45,7 @@ The sensor must be configured on the hardware page. The following parameters mus
 - Wires: You need to set this parameter to the configuration of your RTD (2,3 or 4 wire).
 - Interval: defines the frequency of sensor readings in seconds.
 - Kettle/Fermenter: You can select a Kettle OR Fermenter if you want to activate reduced sensor logging during inactivity of the Kettle / Fermenter
-- Reducedlogging: Defines the logging interval for reduced logging in seconds (e.g. 300 would result in logging every 5 Minutes when the Kettle / Fermenter logic is not acitve) (0: no sensor logging during inactivity)
+- Reducedlogging: Defines the logging interval for reduced logging in seconds (e.g. 300 would result in logging every 5 Minutes when the Kettle / Fermenter logic is not active) (0: no sensor logging during inactivity)
 
 
 Please note that the max board delivers readings above 900C if no sensor is connected to the board.
@@ -52,7 +54,7 @@ Please note that the max board delivers readings above 900C if no sensor is conn
 
 ### Changelog:
 
-- 27.02.25: (0.2.0.a5) Retire the old mx31865 library and move to the adafruit-circuitpython-max31865 library. This should prevent the false readings and the jumps between data points
+- 20.03.25: (0.2.0) Retire the old mx31865 library and move to the adafruit-circuitpython-max31865 library. This should prevent the false readings and the jumps between data points (requires Server 4.6.0 for Pi4 and older boards)
 - 25.06.23: (0.1.10) Better logging description on high delta value
 - 09.06.23: (0.1.9) Updated descriptions for Sensor parameters on Hardware page. Updated README.
 - 28.03.23: (0.1.8) No logging options in case of Kettle or Fermenter inactivity (set reducedlogging to 0)
