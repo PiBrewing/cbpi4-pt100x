@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='cbpi4-pt100x',
-      version='0.1.10',
+      version='0.2.0',
       description='CraftBeerPi4 PT100/PT1000 Sensor Plugin',
       author='Alexander Vollkopf',
       author_email='avollkopf@web.de',
@@ -19,5 +19,8 @@ setup(name='cbpi4-pt100x',
       'cbpi4-pt100x': ['*','*.txt', '*.rst', '*.yaml']},
       packages=['cbpi4-pt100x'],
       long_description=long_description,
-      long_description_content_type='text/markdown'
+      long_description_content_type='text/markdown',
+      install_requires=[
+          'adafruit-circuitpython-max31865'
+      ], 
      )
