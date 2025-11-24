@@ -54,6 +54,7 @@ Please note that the max board delivers readings above 900C if no sensor is conn
 
 ### Changelog:
 
+- 13.10.25: (0.2.1) Add pyproject.toml file to support pip 25.3+
 - 20.03.25: (0.2.0) Retire the old mx31865 library and move to the adafruit-circuitpython-max31865 library. This should prevent the false readings and the jumps between data points (requires Server 4.6.0 for Pi4 and older boards)
 - 25.06.23: (0.1.10) Better logging description on high delta value
 - 09.06.23: (0.1.9) Updated descriptions for Sensor parameters on Hardware page. Updated README.
